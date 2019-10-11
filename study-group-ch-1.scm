@@ -29,7 +29,7 @@
 ;; (test 0 (p))
 
 ;; Applicitave order - is
-;; Normal order 
+;; Normal order
 
 ; Exercise 1.6
 
@@ -70,7 +70,7 @@
       (sqrt-iter* (improve guess x)
                   guess
                   x)))
-                  
+
 (define (sqrt x)
   (sqrt-iter* 1.4 0 x))
 
@@ -134,7 +134,7 @@
 
 (h2 4)
 
-;; Exercise 1.11
+;; TODO: Exercise 1.11
 
 ;; recursive
 
@@ -160,7 +160,7 @@
 
 (define (f4 n)
   (f4-iter n 1 2 4))
-  
+
 (define (f4-iter i 3ago 2ago last)
   (if (= i 0)
       3ago
@@ -170,5 +170,55 @@
                (+ (* 3 3ago) (* 2 2ago)))))
 
 (f4 3)
-               
-               
+
+
+;; far left [2, 0] [y x] = (+ [1 -1] [1 0]): row 2 indexed by 0
+;; far right 
+
+;; [1 2] = (+ [0 1] [1 1])
+
+"Exercise 1.12"
+(define (pascals-triangle x y)
+  (cond ((= x 0) 1)
+        ((< x 0) 0)
+        ((= x y) 1)
+        ((> x y) 0)
+        (pascals-triangle (+ (pascals-triangle (- x 1) (- y 1))
+                             (pascals-triangle x (- y 1))))))
+
+(pascals-triangle 0 4)
+(pascals-triangle 1 4)
+(pascals-triangle 2 4)
+(pascals-triangle 3 4)
+(pascals-triangle 4 4)
+
+"Exercise 1.13"
+
+(define (psi) (/ (- 1 (sqrt 5)) 2))
+(define (phi) (/ (+ 1 (sqrt 5)) 2))
+
+(define (fib n) (fib-iter 1 0 n))
+(define (fib-iter a b count)
+  (if (= count 0)
+      b
+      (fib-iter (+ a b) a (- count 1))))
+
+(define (fibber n) (/ (- (expt (phi) n) (expt (psi) n)) (sqrt 5)))
+
+(fib 7)
+(fibber 7)
+
+"Exercise 1.15"
+(define (cube x) (* x x x))
+(define (proc x) (- (* 3 x) (* 4 (cube x))))
+(define (sine angle i)
+  (display i)
+  (if (not (> (abs angle) 0.1))
+      i 
+      (proc (sine (/ angle 3.0) (+ i 1) ))))
+
+(sine 12.15 0)
+
+;; space requirement is logrithmic
+;; number of steps is logrithmic
+
