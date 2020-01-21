@@ -348,14 +348,27 @@
 ; (faster-expt 16 0 32)
 ; 32
 
-;; TODO: "Exercise 1.17"
+"Exercise 1.17"
 
-#;(define (dumb-* a b)
+;; in which it is assumed that our language can only add, not multiply)
+
+(define (dumb-* a b)
   (if (= b 0)
       0
-      (dumb-* )))
+      (+ a (dumb-* a (dec b)))))
 
-;; TODO: "Exercise 1.18"
+(dumb-* 4 5) ;; 20
+
+"Exercise 1.18"
+
+(define (dumb-*-i a b)
+  (define (iter a b result)
+    (if (= b 0)
+        result
+        (iter a (dec b) (+ a result))))
+  (iter a b 0))
+
+(dumb-*-i 5 4) ;; 20
 
 "Exercise 1.30"
 
