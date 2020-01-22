@@ -436,3 +436,106 @@
   (iter a null-value))
 
 (accumulate-i + 0 1 5) ;; 55
+
+"Exercise 1.34"
+
+; This will not run because of the `x` binding (see notes):
+#;(define (g a) 
+  (let ((x (+ a 10))
+        (y (- x 10)))
+    (+ x y)))
+
+(define (f* g)
+  (g 2))
+
+(f* square) ; 4
+
+(f* (lambda (z) (* z (+ z 1)))) ; 6
+
+; (f* f*) ; the first call yields `(f* 2)`, which recursively calls f*, which yields `(2 2)` and `2` is not a procedure
+
+(define (fixed-point f first-guess tolerance)
+
+  ; Check if two guesses were close enough
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+
+  ; Try the next value
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+
+  ; Run it
+  (try first-guess))
+
+"Exercise 1.41"
+
+(define (double f) (lambda (x) (f (f x))))
+
+((double inc) 2) ; 4
+((double inc) 1) ; 3
+((double square) 2) ; 16
+
+(((double (double double)) inc) 5) ; 21
+
+;        (doube double) ---> (lambda (x) (double (double x)))
+; ((double double) inc) ---> (double (double inc))
+;                       ---> (double (lambda (x) (inc (inc x))))
+;                            (lambda (y) (f (f y)))
+;                       ---> (lambda (y) ((lambda (x) (inc (inc x))) ((lambda (x) (inc (inc x))) y)))
+;                       ---> (lambda (x) ((lambda (x) (inc (inc x))) ((lambda (x) (inc (inc x))) x)))
+
+((lambda (x) ((lambda (x) (inc (inc x))) ((lambda (x) (inc (inc x))) x))) 2) ; 6
+
+"Exercise 1.42"
+
+(define (compose f g) (lambda (x) (f (g x))))
+((compose square inc) 6) ; 49
+
+"Exercise 1.43"
+
+(define (repeated f n)
+  (if (= n 0)
+      (lambda (x) x)
+      (compose f (repeated f (- n 1)))))
+
+"Exercise 1.46"
+
+;; TODO: Work with da Beaz's solution
+
+(define (iterative-improve good-enough? improve)
+  (define (iter guess)
+    (if (good-enough? guess)
+        guess
+        (iter (improve guess))))
+  iter)
+
+
+
+#;(define (iterative-improve good-enough? refine-guess x)
+  (lambda (guess)
+    (define (iter guess)
+      (if (good-enough? guess x)
+          guess
+          (iter (refine-guess guess x))))
+    (iter guess)))
+
+#;(define (iterative-improve good-enough? refine-guess x)
+    (define (iter guess)
+      (if (good-enough? guess x)
+          guess
+          (iter (refine-guess guess x))))
+    (iter guess)
+  )
+
+;; (iterative-improve (lambda (guess x) (< (abs (- (square guess) x)) 0.001)) (lambda (guess x) (average guess (/ x guess))) 2)
+
+;; sqrt good-enough?
+;;    ((lambda (guess x) (< (abs (- (square guess) x)) 0.001)) 1.4 2)
+;;    (lambda (guess x) (< (abs (- (square guess) x)) 0.001))
+;; improve guess
+;;    (average guess (/ x guess))
+;;    ((lambda (guess x) (average guess (/ x guess))) 1 2)
+;;    (lambda (guess x) (average guess (/ x guess)))

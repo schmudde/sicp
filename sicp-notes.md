@@ -2,6 +2,7 @@ With David Beazley
 
 # Day 1
 
+
 - Elements of programming
     - Primitives: `32`, `3.7`
     - Combinations (built-in operators and expressions): `42 + 3.7`
@@ -207,3 +208,214 @@ def h():
 
 f() # this would work in dynamic scope
 ```
+
+# Day 2
+
+- Evaluate: substitute (expand)
+- Apply: reduce
+
+Substitution drives all the computation of the first chapter. Evaluate the symbols and substitute.
+
+```python
+square=('*','x','x')
+
+def substitute(items, name, value):
+  if isinstance(items, tuple):
+    return tuple(substitute(item, name, value) for item in items)
+  elif items == name:
+    return value
+  else:
+    return items
+
+> substitute(23, 'x', 10) # 32
+> substitute('x','x', 15) # 15
+> square # ('*', 'x', 'x')
+> substitute(square, 'x', 2) # ('*', 2, 2)
+```
+
+```
+(let ((x (+ a 10)
+      (y (+ a 20))))
+      (+ x y))
+```
+
+## Let
+
+```
+(let ((var1 exp1)
+      (var2 exp2)
+       ...
+      (varn expn))
+  body)
+```
+
+It is a syntax translation to the following: `((lambda (var1 var2 ... varn) body) exp1 exp2 ... expn)`
+
+&there4; this works:
+
+```
+(define (g a)
+  (let ((x (+ a 10))
+        (y (- a 2)))
+    (+ x y)))
+```
+
+&there4; this doesn't work:
+
+```
+(define (g a)
+  (let ((x (+ a 10))
+        (y (- x 2)))
+    (+ x y)))
+```
+
+Because `x` is not defined before `(- x 10)` is evaluated. All the expresions in the lambda (` exp1 exp2 ... expn`) are evaluated first.
+
+But this does work:
+```
+(define (h a)
+  (let ((x (+ a 10)))
+    (let ((y (+ x 2)))
+      (+ x y))))
+```
+
+And this does work:
+
+```
+(define (g a)
+  (let* ((x (+ a 10))
+         (y (- x 2)))
+    (+ x y)))
+```
+
+`let*` works by nesting lambdas
+
+
+## Fixed Point
+
+As an operation converges on a value. Such as a square root converging to 1.
+
+`f = sqrt`
+`1 = f(1) = f(f(1)) = f(f(f(1))))`
+
+## Data Structures
+
+What is this? -  `(define a (cons 3 4))`
+
+```
+(define (cons a b)
+  (lambda (m)
+    (cond ((= m 0) a)
+          ((= m 1) b))))
+
+(define (car p) (p 0))
+(define (cdr p) (p 1))
+```
+
+All you need is what you learn in Chapter 1 (see page 91). `cons` can just be defined in anonymous functions.
+
+## Functions as Data
+
+Exercise 2.6
+
+```
+(define zero (lambda (f) (lambda (x) x))) ; means don't do the function at all
+(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+(define three (lambda (f) (lambda (x) (f (f (f x))))))
+```
+
+`(inc (inc (inc 0)))` = `((three inc) 0)`
+
+How do we add one more `(f x)` for `four`?
+
+`(define (add-1 n)
+  (f (... previous number ...)))`
+
+`(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))`
+
+Note: `(f ((n f) x))` is the same format as `((three inc) 0)`
+
+How do we implement plus (`+`)? - `(define (plus a b) ... )` (hint must return `(define (plus a b) (lambda (f) (lambda (x) ... )))`)
+
+What is truth?
+
+```
+(define (TRUE x y) x)
+(define (FALSE x y) y)
+
+(TRUE 0 1) ; 0
+(FALSE 0 1) ; 1
+
+(define (NOT x) (x FALSE TRUE))
+(NOT TRUE) ; #<procedure:FALSE>
+```
+
+- Suppose that `x` is TRUE, the result of the AND is determined what `y` is. If the `y` is TRUE, then it is TRUE. If the `y` is FALSE, then it is FALSE.
+- The behavior of TRUE is to pick the first thing you give it: `(define (TRUE x y) x)`.
+- `(define (AND x y) (x y x))`
+    - T+T: T: True returns the first thing you give it: `y` (T).
+    - T+F: F: True returns the first thing you give it: `y` (F).
+    - F+T: F: False returns the second thing you give it: `x` (F).
+    - F+F: F: False returns the second thing you give it: `x` (F).
+- `(define (OR x y) (x x y))`
+
+## Lambda Calculus
+
+λ-Calculus
+
+There are only three valid expressions:
+
+1. Names: x, y, etc.
+2. Function: λ<name>.<expression>
+3. Application: <expression><expression>
+
+There is NOTHING else
+
+- No numbers or other primitives
+- No math operators (+,-, etc.)
+- No data structures (pairs, etc.)
+
+All you need are functions and substitutions.
+
+- (λx.(λy.x))ab &larr; this is the TRUE function above. Explained:
+    - `a` substitutes into the `x`: (λx.(λy.x)) &darr;
+    - returns the second function (λy.a)b &darr;
+    - returns `a` (there is no `y`)
+- (λx.(λy.y))ab &larr; this is the FALSE function above
+    - returns (λy.y)b &darr;
+    - returns `b` (there was no substitution into `a`)
+
+## Lists
+
+```scheme
+(list? '(1 2)) ; #t
+(list? '(1 . 2)) ; #f
+(list '() 1) ; '(() 1)
+(cons '() 1) ; '(() . 1)
+```
+
+Compute the length
+
+```scheme
+(define (length items)
+  (if (null? items)
+      0
+      (+ 1 (length (cdr items)))))
+
+(length '(1 2 3)) # 3
+```
+
+Pick out the nth item
+
+```scheme
+(define (list-ref items n)
+  (if (= n 0)
+      (car items)
+      (list-ref (cdr items) (- n 1))))
+
+(list-ref '(1 2 3) 2) # 3
+```
+
+Shortcuts: `(cadr <arg>) = (car (cdr <arg>))`
