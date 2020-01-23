@@ -1,7 +1,10 @@
 With David Beazley
 
-# Day 1
+> I don't know what your opinion of pair programming is, but if you're in a SICP class, I assume you work alone.
 
+~ Da Beaz (22/January/2020)
+
+# Day 1
 
 - Elements of programming
     - Primitives: `32`, `3.7`
@@ -101,7 +104,6 @@ Quality measured by size and the number of steps
 (* 5 (* 4 (* 3 (fact 2))))
 (* 5 (* 4 (* 3 (2 * (fact 1)))))
 ```
-
 
 ### [Tree Recursion](http://taoofcode.net/on-triangles/) (with Sierpinski Triangles)
 
@@ -233,11 +235,10 @@ def substitute(items, name, value):
 > substitute(square, 'x', 2) # ('*', 2, 2)
 ```
 
-```
-(let ((x (+ a 10)
-      (y (+ a 20))))
-      (+ x y))
-```
+## Data Abstraction
+
+- *Constructors*: implement the abstract data in terms of the concrete representation, i.e. `make-rational-number`.
+- *Selectors*: select parts of the data, i.e. `numerator` and `denominator.`
 
 ## Let
 
@@ -419,3 +420,185 @@ Pick out the nth item
 ```
 
 Shortcuts: `(cadr <arg>) = (car (cdr <arg>))`
+
+# Day 3
+
+## Recursion and Lists
+
+Templates:
+
+    (define (map prodc items)
+      (if (null? items)
+          null
+          (cons (...) (map proc (cdr items)))))
+
+Filter only return itmes where (proc item) is true
+
+
+    (define (filter proc items)
+      (cond ((null? items) null)
+            ((proc (car items)) ...) ;; predicate is false (keep the item)
+            (else (filter proc (cdr items))))) ;; predicate is true (discard the item)
+
+## Fold and Accumulate
+
+`append` as `accumulate`
+
+    (define (append* seq1 seq2)
+      (accumulate cons seq2 seq1))
+
+```
+initial: '(4 5 6) sequence: '(1 2 3)
+(cons '(4 5 6) (accum cons '(4 5 6) '(1 2 3)))
+               (cons 1 (accum cons '(4 5 6) '(2 3)))
+                        (cons 2 (accum cons '(4 5 6) '(2 3)))
+                                 (cons 3 (accum cons '(4 5 6) '()))
+                                          return cons '(4 5 6)
+```
+
+`(append* '(1 2 3) '(4 5 6))` &rArr; '(1 2 3 4 5 6)
+
+
+Why does it work to
+
+(define fold-right accumulate)
+(fold-right / 1 (list 1 2 3))
+(fold-left / 1 (list 1 2 3))
+(fold-right list null (list 1 2 3))
+(fold-left list null (list 1 2 3))
+
+(define (reverse2 sequence)
+  (fold-right (lambda (x y) (append y (list x))) null sequence))
+
+(define (reverse3 sequence)
+  (fold-left (lambda (x y) (cons y x)) null sequence))
+
+## Quote
+
+Quotation ensures Scheme does not evaluate something. It allows us to manipulate symbolic data, not just numeric data.
+
+Subtlties:
+
+- `(quote a)` is a **special form**.
+- The special form maintains the principle that any expression seen by the interpreter can be manipulated as a data object. Thus they are all equvalent:
+    - `(car '(a b c))`
+    - `(car (quote (a b c)))`
+    - `(list 'car (list 'quote '(a b c)))`
+- Use `eq?` to test wheter two symbols are the same.
+
+A literal evaluates to the literal symbol or a literal primitive.
+
+```
+> 1
+1
+> '1
+'1
+> 'a
+'a
+> (eval '1)
+1
+```
+
+    (define b 2)
+    (list 'a b) ; (a 2)
+
+## Mappings
+
+- In key/value pairs, the keys are often symbolic: `(define record '((foo 2) (bar 3) (spam 4)))`
+- `record` &rarr; `'((foo 2) (bar 3) (spam 4))`
+- `(assoc 'bar record)` &rarr; `(bar 3)`
+
+### How does assoc work?
+
+(define (assoc* key items)
+  (if (null? items)
+      false
+      (if (eq? (caar items) key)
+          (car items)
+          (assoc key (cdr items)))))
+
+## Expressions With Abstract Data
+
+    (define (sum? exp)
+      (and (pair? exp) (eq? (car exp) '+)))
+
+    (sum? '(+ (* 2 3) 5)) ; #t
+
+    (define (make-sum left right)
+      (list '+ left right))
+
+    (make-sum '(* 2 x) 'y) ; '(+ (* 2 x) y)
+
+## Objects and Types
+
+### Objects
+
+- OO programming is based on message passing
+    - *Messages* passed to an object: depdend on the the objects infastructure to select and run the code.
+        - Used to achieve encapsulation and distribution.
+            - Distinguishes the general function from the specific implementation.
+            - Rather than executing the process by name, send a message and the object will select and execute the correct code.
+        - Message passing is different because it does invoke a process, subroutine, or function by name
+    - *Parameters* in a method: are variables in a method declaration (the names)
+    - *Arguments* passed to a method/procedure: are the data passed into the method's parameters (the values)
+    - You define parameters and you make arguments
+- Terminology is a bit unusual, but it's the basis of (`.`) `obj.attr # Send "attr" message to "obj"`
+- A class serves as a namespace for functions:
+    - *Class*: classes and structs are *user-defined types* (i.e. objects can be declared a specific type).
+        - `class`: members and base classes are private by default
+        - `struct`: members and base classes are public by default.
+    - *Namespace*: declares a scope for its functions, objects, types, etc....
+- Dispatching often table-driven (e.g., dicts in Python)
+
+### Types
+
+Type inheritance is very difficult. See page 200, footnote 52.
+
+```python
+x=23
+y=4.5
+type(x) # <class 'int'>
+type(y) # 'float'
+x + y # 27.5
+y + x # 27.5
+x # 23
+x.__add__(y) # NotImplemented
+y.__add__(x) # 27.5
+```
+Type `int` knows nothing about `float` but `float` knows about `int`.
+
+```python
+y.__sub__(x) # -18.5
+x.__sub__(y) # NotImplemented But!! it's not commutative
+y.__rsub__(x) # 18.5
+```
+
+`rsub` is *reverse subtraction*. `int` doesn't know about `float` so the `float` have to have a *reverse subtraction*. It is the more "capable number."
+
+Python uses *Type Linearization* to deal with multiple inheritance.
+
+# Day 4
+
+Racket vs. Scheme
+
+- Pair is essentially anything that has both a `car` and `cdr` (Racket)
+    - `(pair? '(1))` &rArr; #t, `(car '(1))` &rArr; `1`
+    - `(pair? (quote 1))` &rArr; #f, `(pair? (quote 1))` &rArr; `expected: pair?`
+    - `(pair '(1 2 3))` &rArr; #t
+        - `(car '(1 2 3))` &rArr; `1`
+        - `(car '(1 2 3))` &rArr; `'(2 3)`
+
+```racket
+'a ; 'a
+(eval 'g) ; undefined
+```
+
+```scheme
+'a ; a
+eval ; #<procedure:meval>
+(eval 'g)  ; meval: arity mismatch
+```
+
+## Variables
+
+`set!` does not work unless you've previously defined the variable somewhere
