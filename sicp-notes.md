@@ -4,6 +4,12 @@ With David Beazley
 
 ~ Da Beaz (22/January/2020)
 
+Functional programming is programming without assignments. No mutation.
+
+~ Chapter 3 in SICP, where they introduce assignment for the first time.
+
+TODO: Read 232 *Sameness and Change*
+
 # Day 1
 
 - Elements of programming
@@ -531,6 +537,8 @@ A literal evaluates to the literal symbol or a literal primitive.
 
 ## Objects and Types
 
+Objects carry state. **The state changes.**
+
 ### Objects
 
 - OO programming is based on message passing
@@ -601,4 +609,149 @@ eval ; #<procedure:meval>
 
 ## Variables
 
+> When we defined the evaluation model in section 1.1.3, we said that the first step in evaluating an expression is to evaluate its subexpressions. But we never specified the order in which the subexpressions whould be evaluated (e.g. left to right or right to left). When we introduce assignment, the order in which the arguments to a procedure are evaluated can make a difference to the result.
+
+~ page 236
+
 `set!` does not work unless you've previously defined the variable somewhere
+
+ You can do this in Python too (although a bit strange)
+```python
+def make_counter(n):
+  def incr():
+    nonlocal n # without this, Python would assume that n is a `local` variable
+    n += 1
+    return n
+  return incr
+
+c = make_counter(0)
+d = make_counter(10)
+c() # 1
+c() # 2
+d() # 11
+```
+
+- If you want to modify a variable within a closure it has to be tagged a `nonlocal`.
+- Python assumes that all locally declared variables are within a local scope.
+- This would be solved if Python had special syntax for variable declaration (like Ada).
+    - `var x = 23;`
+    - `x = 5` would look for the nearest `var` declaration in scope.
+    - The lack of a `var` is probably the #1 reason why you have to use the `self` within classes.
+
+```python
+class Spam:
+  # Without `var x;`
+  # def yow():
+  #   x = 13
+
+  def yow(self):
+    self.x = 13
+```
+
+## Environments
+
+1. What environment was the object declared in?
+2. What enviornment was the object executed within?
+
+## Concurent Execution
+
+Page 300: *Correct Behavior of Concurrent Programs*
+
+A single thread:
+```python
+import time
+
+def countdown(n):
+  while n>0:
+  print("T-minus", n)
+  time.sleep(10)
+  n -=1
+```
+
+Run again after starting a thread:
+```python
+import threading
+threading.Thread(target=countdown, args=[5]).start()
+```
+
+```python
+class Counter:
+    def __init__(self):
+        self.value=0
+    def incr(self)
+        self.value += 1
+    dec decr(self)
+        self.value -= 1
+
+def down(n):
+    while n>0:
+        c.decr()
+        n -= 1
+
+def up(n):
+    while n>0:
+        c.incr()
+        n -=1
+```
+
+Obviously:
+```python
+c.value # 0
+up(10_000_000)
+c.value # 10000000
+down(10_000_000)
+c.value # 0
+```
+
+With concurrent threads:
+```python
+t1 = threading.Thread(target=up, args=[10_000_000])
+t2 = threading.Thread(target=down, args=[10_000_000])
+t1.start(); t2.start()
+t1.join(); t2.join() # wait for complete
+
+c.value # some fucked up number because of the race conditions
+```
+
+With a mutex (mutual exclusion) lock:
+```python
+import threading
+lock = threading.Lock()
+
+def down(n):
+    while n>0:
+        lock.acquire()
+        c.decr()
+        lock.release()
+        n -= 1
+
+def up(n):
+    while n>0:
+        lock.acquire()
+        c.incr()
+        lock.release()
+        n -=1
+```
+
+With concurrent threads:
+```python
+t1 = threading.Thread(target=up, args=[10_000_000])
+t2 = threading.Thread(target=down, args=[10_000_000])
+t1.start(); t2.start()
+t1.join(); t2.join() # wait for complete
+
+c.value # 0
+```
+
+## Streams
+
+- Delay
+    - `(define p (delay (+ 10 20)))`
+    - `(force p)` &rArr; `30`
+    - As a lambda
+        - `(define p (lambda () (+ 10 20)))`
+        - `(p)` &rArr; `30`
+    - `(cons a (delay b))`
+        - `define (range start stop) (if (>= start stop) '() (cons start (delay (range (+ 1 start) stop))))`
+        - `(range 1 10)` &rArr; `'(1 ... #<promise...)`
+        - `(force (cdr a))` &rArr; `'(2 ... #<promise...)`
