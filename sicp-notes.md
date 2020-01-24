@@ -773,3 +773,45 @@ Programming languages are designed as a kind of dance involving "eval" and "appl
 - Can manipulate programs using same tools
 - There is a uniformity to it
 - Contrast: Having to use a lexer/parser to construct abstract syntax trees, manipulating syntax trees, etc.
+
+## 4.2 Lazy Evaluation
+
+Up to this point, there has been a differentiation between Lists and Streams. With lazy evaluation there turns out to be no difference.
+
+## 4.3 Nondeterministic Evaluator
+
+`(define x (amb 1 2 3))`: the evaluator will pick one value of `x` and try the program. If it fails, it will backtrack and try `2`. If it fails, it will backtrack and try `3`. Eventually it will try enough possibilities and arrive at an answer (if there is an ansewr).
+
+It's a form of programming with continuations:
+
+- Functions don't return results, they return functions
+- A function is given a function that is called to produce a result
+- To continue the calculation call the success function, keep doing this to chain.
+
+## Register Machines
+
+```scheme
+(define (fact n)
+  (define (fact-iter n result)
+    (if (= n 1) result
+        (fact-iter (- n 1) (* n result))))
+        (fact-iter n 1))
+```
+
+`(- n 1) (* n result)` can't do it in this order in the register machine (subtle difference)
+
+```scheme
+(n 'set! 4) ; initalize
+(1->result) ; initalize
+(n-is-one?) ; #f
+(p->result) ; (* n result)
+(dec->n)    ; (- n 1)
+(n-is-one?) ; #f
+(p->result)
+(dec->n)
+(n-is-one?) ; #f
+(p->result)
+(dec->n)
+(n-is-one?) ; #t
+(result 'get) ; 24
+```

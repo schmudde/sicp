@@ -20,6 +20,7 @@
 (define (combination? sexp) (list? sexp))
 
 (define (seval-primitive sexp environment) sexp)
+
 (define (seval-symbol sexp environment)
   (lookup-environment environment sexp))
 
@@ -31,6 +32,7 @@
         ((lambda? sexp) (seval-lambda sexp environment))
         ((and? sexp) (seval-and sexp environment))
         ((or? sexp) (seval-or sexp environment))
+        ((cond? sexp) (seval-cond sexp environment))
         ((procedure? sexp) (seval-procedure sexp environment))
         (else "Unknown combination --- seval-combination")))
 
@@ -75,6 +77,16 @@
   (if (null? (cdr sexp))
       #f
       (seval-expression-list (cdr sexp) environment)))
+
+; TODO: (cond cond-clause ...) = [test-expr then-body ...+]
+; 	 	                |[else then-body ...+]
+; 	                	|[test-expr => proc-expr]
+;               	 	|[test-expr]
+(define (cond? sexp) (eq? (car sexp) 'cond))
+(define (seval-cond sexp environment)
+  null
+  ; (seval (cdr sexp) environment)
+  )
 
 ; (lambda (args) expr1 expr2 ... exprn)
 ; lambda takes a sequence of expressions (like begin). Returns value of evaluating the last one. 
