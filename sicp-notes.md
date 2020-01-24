@@ -10,11 +10,6 @@ Functional programming is programming without assignments. No mutation.
 
 ~ Chapter 3 in SICP, where they introduce assignment for the first time.
 
-- There are deep consequences of programs as data
-- Can manipulate programs using same tools
-- There is a uniformity to it
-- Contrast: Having to use a lexer/parser to construct abstract syntax trees, manipulating syntax trees, etc.
-
 # Day 1
 
 - Elements of programming
@@ -750,13 +745,31 @@ c.value # 0
 
 ## Streams
 
-- Delay
-    - `(define p (delay (+ 10 20)))`
-    - `(force p)` &rArr; `30`
-    - As a lambda
-        - `(define p (lambda () (+ 10 20)))`
-        - `(p)` &rArr; `30`
-    - `(cons a (delay b))`
-        - `define (range start stop) (if (>= start stop) '() (cons start (delay (range (+ 1 start) stop))))`
-        - `(range 1 10)` &rArr; `'(1 ... #<promise...)`
-        - `(force (cdr a))` &rArr; `'(2 ... #<promise...)`
+Delay
+
+- `(define p (delay (+ 10 20)))`
+- `(force p)` &rArr; `30`
+- As a lambda
+    - `(define p (lambda () (+ 10 20)))`
+    - `(p)` &rArr; `30`
+- `(cons a (delay b))`
+    - `define (range start stop) (if (>= start stop) '() (cons start (delay (range (+ 1 start) stop))))`
+    - `(range 1 10)` &rArr; `'(1 ... #<promise...)`
+    - `(force (cdr a))` &rArr; `'(2 ... #<promise...)**
+
+# Day 5
+
+**Metacircular Evaluation**
+
+Programming languages are designed as a kind of dance involving "eval" and "apply**
+
+- When are expressions evaluated?
+- How are expressions evaluated?
+- When are procedures applied?
+
+**Lisp**
+
+- There are deep consequences of programs as data
+- Can manipulate programs using same tools
+- There is a uniformity to it
+- Contrast: Having to use a lexer/parser to construct abstract syntax trees, manipulating syntax trees, etc.
