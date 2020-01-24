@@ -1,5 +1,7 @@
 With David Beazley
 
+TODO: Read 232 *Sameness and Change*
+
 > I don't know what your opinion of pair programming is, but if you're in a SICP class, I assume you work alone.
 
 ~ Da Beaz (22/January/2020)
@@ -8,7 +10,10 @@ Functional programming is programming without assignments. No mutation.
 
 ~ Chapter 3 in SICP, where they introduce assignment for the first time.
 
-TODO: Read 232 *Sameness and Change*
+- There are deep consequences of programs as data
+- Can manipulate programs using same tools
+- There is a uniformity to it
+- Contrast: Having to use a lexer/parser to construct abstract syntax trees, manipulating syntax trees, etc.
 
 # Day 1
 
