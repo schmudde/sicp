@@ -21,13 +21,13 @@ Functional programming is programming without assignments. No mutation.
                 - The devil is in the details. Mostly **when**.
             - There are [three ways a form may be evaluated](https://stackoverflow.com/questions/1171252/whats-the-explanation-for-exercise-1-6-in-sicp/59833295#59833295) in Scheme:
                 1. **Applicative Order** (do it first)
-                    - *fully expand and then **reduce***
+                    - *evaluate the arguments and then **apply***
                     - Scheme: arguments are *fully evaluated* before calling a procedure (like Python)
                     - This is how most programming languages work
-                    - `f(1+1)`: `3*2*2`
+                    - `f(x)=x+x`: `3*f(1)*f(1)` &rarr; `3*2*2`
                 2. **Normal Order** (do it later)
-                    - *evaluate the arguments and then **apply***
-                    - `f(1+1)`: `3*(1+1)*(1+1)` (also used in "lazy evaluation")
+                    - *fully expand and then **reduce***
+                    - `f(x)=x+x`: `3*f(1)*f(1)` &rarr; `3*(1+1)*(1+1)` (also used in "lazy evaluation")
                 3. **Special Forms** For example:
                     - Booleans
                         - `(and <e1> ... <en>)`: Left &rarr; Right. If any <e> evaluates to false, the value of the and expression is false, and the rest of the `<e>`'s are not evaluated.
